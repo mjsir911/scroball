@@ -38,7 +38,6 @@
 
     <!-- Strings related to the main screen -->
     <string name="settings">Settings</string>
-    <string name="remove_ads">Remove ads</string>
     <string name="logout">Logout</string>
     <string name="are_you_sure">Are you sure?</string>
     <string name="logout_confirm">Logging out will clear any scrobbles which have yet to be submitted. Continue?</string>

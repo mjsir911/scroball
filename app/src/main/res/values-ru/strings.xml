@@ -36,7 +36,6 @@
 
     <!-- Strings related to the main screen -->
     <string name="settings">Настройки</string>
-    <string name="remove_ads">Убрать рекламу</string>
     <string name="logout">Выйти из профиля</string>
     <string name="are_you_sure">Вы уверены?</string>
     <string name="logout_confirm">После выхода из системы вы не сможете передавать информацию о скробблинге. Продолжить?</string>

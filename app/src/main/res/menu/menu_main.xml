@@ -4,9 +4,6 @@
         android:id="@+id/settings_item"
         android:title="@string/settings"/>
     <item
-        android:id="@+id/remove_ads_item"
-        android:title="@string/remove_ads"/>
-    <item
         android:id="@+id/privacy_policy_item"
         android:title="@string/privacy_policy"/>
     <item

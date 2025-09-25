@@ -18,32 +18,19 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.RelativeLayout;
 
-import com.android.billingclient.api.BillingClient;
-import com.android.billingclient.api.BillingClientStateListener;
-import com.android.billingclient.api.BillingFlowParams;
-import com.android.billingclient.api.BillingResult;
-import com.android.billingclient.api.Purchase;
-import com.android.billingclient.api.PurchasesUpdatedListener;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
 import com.google.common.collect.ImmutableList;
 import com.peterjosling.scroball.R;
 import com.peterjosling.scroball.ScroballApplication;
 
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements PurchasesUpdatedListener {
+public class MainActivity extends AppCompatActivity {
 
   public static final String EXTRA_INITIAL_TAB = "initial_tab";
   public static final int TAB_NOW_PLAYING = 0;
   public static final int TAB_SCROBBLE_HISTORY = 1;
 
-  private static final String REMOVE_ADS_SKU = "remove_ads";
-
   private ScroballApplication application;
-  private BillingClient billingClient;
-  private AdView adView;
-  private boolean adsRemoved = false;
 
   /**
    * The {@link PagerAdapter} that will provide fragments for each of the
@@ -81,57 +68,11 @@ public class MainActivity extends AppCompatActivity implements PurchasesUpdatedL
     int initialTab = getIntent().getIntExtra(EXTRA_INITIAL_TAB, TAB_NOW_PLAYING);
     mViewPager.setCurrentItem(initialTab);
 
-    this.adsRemoved = application.getSharedPreferences().getBoolean(REMOVE_ADS_SKU, false);
-
-    adView = findViewById(R.id.adView);
-    if (this.adsRemoved) {
-      RelativeLayout parent = (RelativeLayout) adView.getParent();
-      if (parent != null) {
-        parent.removeView(adView);
-      }
-    } else {
-      AdRequest adRequest =
-          new AdRequest.Builder().addTestDevice("86193DC9EBC8E1C3873178900C9FCCFC").build();
-      adView.loadAd(adRequest);
-    }
-  }
-
-  @Override
-  protected void onResume() {
-    super.onResume();
-    billingClient = BillingClient.newBuilder(this).setListener(this).build();
-    billingClient.startConnection(
-        new BillingClientStateListener() {
-          @Override
-          public void onBillingSetupFinished(BillingResult result) {
-            int billingResponseCode = result.getResponseCode();
-            if (billingResponseCode == BillingClient.BillingResponseCode.OK) {
-              Purchase.PurchasesResult purchasesResult =
-                  billingClient.queryPurchases(BillingClient.SkuType.INAPP);
-              onPurchasesUpdated(
-                  result, purchasesResult.getPurchasesList());
-            }
-          }
-
-          @Override
-          public void onBillingServiceDisconnected() {}
-        });
-  }
-
-  @Override
-  protected void onPause() {
-    super.onPause();
-    billingClient.endConnection();
   }
 
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
     getMenuInflater().inflate(R.menu.menu_main, menu);
-
-    // Hide menu item if the IAP has been purchased.
-    if (this.adsRemoved) {
-      menu.findItem(R.id.remove_ads_item).setVisible(false);
-    }
     return true;
   }
 
@@ -142,17 +83,6 @@ public class MainActivity extends AppCompatActivity implements PurchasesUpdatedL
     if (itemId == R.id.settings_item) {
         Intent intent = new Intent(getBaseContext(), SettingsActivity.class);
         startActivityForResult(intent, 1);
-        return true;
-    } else if (itemId == R.id.remove_ads_item) {
-        // BillingFlowParams.Builder builder =
-        //     BillingFlowParams.newBuilder()
-        //         .setSkuDetails(SkuDetails skuDetails)
-        //         .setType(BillingClient.SkuType.INAPP);
-        // BillingResult billingResult = billingClient.launchBillingFlow(this, builder.build());
-        // int responseCode = billingResult.getResponseCode();
-        // if (responseCode != BillingClient.BillingResponseCode.OK) {
-        //     purchaseFailed();
-        // }
         return true;
     } else if (itemId == R.id.privacy_policy_item) {
         Intent browserIntent =
@@ -186,28 +116,6 @@ public class MainActivity extends AppCompatActivity implements PurchasesUpdatedL
             })
         .setNegativeButton(android.R.string.no, null)
         .show();
-  }
-
-  @Override
-  public void onPurchasesUpdated(BillingResult result, List<Purchase> purchases) {
-    int responseCode = result.getResponseCode();
-    if (responseCode != BillingClient.BillingResponseCode.OK) {
-      purchaseFailed();
-    } else if (purchases != null) {
-      for (Purchase purchase : purchases) {
-        if (purchase.getSku().equals(REMOVE_ADS_SKU)) {
-          RelativeLayout parent = (RelativeLayout) adView.getParent();
-          if (parent != null) {
-            parent.removeView(adView);
-          }
-          this.invalidateOptionsMenu();
-          this.adsRemoved = true;
-          SharedPreferences.Editor editor = application.getSharedPreferences().edit();
-          editor.putBoolean(REMOVE_ADS_SKU, true);
-          editor.apply();
-        }
-      }
-    }
   }
 
   /**

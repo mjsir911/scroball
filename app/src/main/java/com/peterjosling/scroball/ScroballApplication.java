@@ -5,8 +5,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
-import com.crashlytics.android.Crashlytics;
-import com.google.android.gms.ads.MobileAds;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.peterjosling.scroball.db.ScroballDB;
@@ -16,7 +14,6 @@ import com.raizlabs.android.dbflow.config.FlowManager;
 import java.util.Locale;
 
 import com.softartdev.lastfm.Caller;
-import io.fabric.sdk.android.Fabric;
 
 import com.peterjosling.scroball.BuildConfig;
 
@@ -33,9 +30,7 @@ public class ScroballApplication extends Application {
   @Override
   public void onCreate() {
     super.onCreate();
-    Fabric.with(this, new Crashlytics());
     FlowManager.init(this);
-    MobileAds.initialize(this, "ca-app-pub-9985743520520066~4279780475");
 
     sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
