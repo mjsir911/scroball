@@ -12,10 +12,13 @@ import com.google.common.eventbus.Subscribe;
 import com.peterjosling.scroball.db.ScroballDB;
 import com.raizlabs.android.dbflow.config.FlowManager;
 
+
 import java.util.Locale;
 
 import com.softartdev.lastfm.Caller;
 import io.fabric.sdk.android.Fabric;
+
+import com.peterjosling.scroball.BuildConfig;
 
 public class ScroballApplication extends Application {
 

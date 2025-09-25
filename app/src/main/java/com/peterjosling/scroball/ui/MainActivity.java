@@ -19,9 +19,9 @@ import android.view.MenuItem;
 import android.widget.RelativeLayout;
 
 import com.android.billingclient.api.BillingClient;
-import com.android.billingclient.api.BillingClient.BillingResponse;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
+import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.google.android.gms.ads.AdRequest;
@@ -99,16 +99,17 @@ public class MainActivity extends AppCompatActivity implements PurchasesUpdatedL
   @Override
   protected void onResume() {
     super.onResume();
-    billingClient = new BillingClient.Builder(this).setListener(this).build();
+    billingClient = BillingClient.newBuilder(this).setListener(this).build();
     billingClient.startConnection(
         new BillingClientStateListener() {
           @Override
-          public void onBillingSetupFinished(@BillingResponse int billingResponseCode) {
-            if (billingResponseCode == BillingResponse.OK) {
+          public void onBillingSetupFinished(BillingResult result) {
+            int billingResponseCode = result.getResponseCode();
+            if (billingResponseCode == BillingClient.BillingResponseCode.OK) {
               Purchase.PurchasesResult purchasesResult =
                   billingClient.queryPurchases(BillingClient.SkuType.INAPP);
               onPurchasesUpdated(
-                  purchasesResult.getResponseCode(), purchasesResult.getPurchasesList());
+                  result, purchasesResult.getPurchasesList());
             }
           }
 
@@ -136,34 +137,37 @@ public class MainActivity extends AppCompatActivity implements PurchasesUpdatedL
 
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
-    switch (item.getItemId()) {
-      case R.id.settings_item:
+    int itemId = item.getItemId();
+
+    if (itemId == R.id.settings_item) {
         Intent intent = new Intent(getBaseContext(), SettingsActivity.class);
         startActivityForResult(intent, 1);
         return true;
-      case R.id.remove_ads_item:
-        BillingFlowParams.Builder builder =
-            new BillingFlowParams.Builder()
-                .setSku(REMOVE_ADS_SKU)
-                .setType(BillingClient.SkuType.INAPP);
-        int responseCode = billingClient.launchBillingFlow(this, builder.build());
-        if (responseCode != BillingResponse.OK) {
-          purchaseFailed();
-        }
+    } else if (itemId == R.id.remove_ads_item) {
+        // BillingFlowParams.Builder builder =
+        //     BillingFlowParams.newBuilder()
+        //         .setSkuDetails(SkuDetails skuDetails)
+        //         .setType(BillingClient.SkuType.INAPP);
+        // BillingResult billingResult = billingClient.launchBillingFlow(this, builder.build());
+        // int responseCode = billingResult.getResponseCode();
+        // if (responseCode != BillingClient.BillingResponseCode.OK) {
+        //     purchaseFailed();
+        // }
         return true;
-      case R.id.privacy_policy_item:
+    } else if (itemId == R.id.privacy_policy_item) {
         Intent browserIntent =
             new Intent(
                 Intent.ACTION_VIEW,
                 Uri.parse("https://scroball.peterjosling.com/privacy_policy.html"));
         startActivity(browserIntent);
         return true;
-      case R.id.logout_item:
+    } else if (itemId == R.id.logout_item) {
         logout();
         return true;
-      default:
+    } else {
         return super.onOptionsItemSelected(item);
     }
+
   }
 
   public void logout() {
@@ -185,8 +189,9 @@ public class MainActivity extends AppCompatActivity implements PurchasesUpdatedL
   }
 
   @Override
-  public void onPurchasesUpdated(int responseCode, List<Purchase> purchases) {
-    if (responseCode != BillingResponse.OK) {
+  public void onPurchasesUpdated(BillingResult result, List<Purchase> purchases) {
+    int responseCode = result.getResponseCode();
+    if (responseCode != BillingClient.BillingResponseCode.OK) {
       purchaseFailed();
     } else if (purchases != null) {
       for (Purchase purchase : purchases) {
